@@ -98,7 +98,7 @@ function liveReloadClientInit() {
                 if (!script.src && !script.textContent) return false;
 
                 let script_src = this.normalizeSrc(script.getAttribute('src'));
-                let show_name = script.id || script.className || script_src
+                let show_name = script.id || script.className || script_src;
                 console.log('%c%s', (window.log_color) ? window.log_color.yellow : '', `*ScriptsAutoload* подключение скрипта: ${show_name}`);
 
                 // Если текущий скрипт - это livereload, то его надо загрузить по-другому
@@ -323,14 +323,19 @@ function liveReloadClientInit() {
                                 let live_reload_client = document.createElement('script');
                                 live_reload_client.className = 'live_reload_client';
                                 live_reload_client.src = this.live_reload_real_url;
+
+                                live_reload_client.onload = this.fetchLiveReloadScriptSuccess.bind(this);
+
+                                live_reload_client.onerror = () => {
+                                    let live_reload_client2 = document.createElement('script');
+                                    live_reload_client2.className = 'live_reload_client';
+                                    live_reload_client2.textContent = res;
+                                    document.head.appendChild(live_reload_client2);
+
+                                    this.fetchLiveReloadScriptSuccess();
+                                };
+
                                 document.head.appendChild(live_reload_client);
-
-                                let live_reload_client2 = document.createElement('script');
-                                live_reload_client2.className = 'live_reload_client';
-                                live_reload_client2.textContent = res;
-                                document.head.appendChild(live_reload_client2);
-
-                                this.fetchLiveReloadScriptSuccess();
                             }
 
                         }).catch((err) => {
