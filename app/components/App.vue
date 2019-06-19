@@ -3,8 +3,9 @@
         <div class="container">
             <h2 class="standard-title">Скачать курс</h2>
             <LessonsList></LessonsList>
-            <div class="pt-20 space-around">
+            <div class="pt-40 space-around align-center user-select">
                 <LoadBtn></LoadBtn>
+                <MasterCheckbox></MasterCheckbox>
             </div>
         </div>
     </div>
@@ -14,12 +15,14 @@
 import { mapMutations } from 'vuex';
 import LessonsList from './LessonsList.vue';
 import LoadBtn from './LoadBtn.vue';
+import MasterCheckbox from './MasterCheckbox.vue';
 
 export default {
     name: 'app',
     components: {
         LessonsList,
-        LoadBtn
+        LoadBtn,
+        MasterCheckbox
     },
 
     methods: {
@@ -55,7 +58,13 @@ export default {
 </script>
 
 <style scoped lang="sass">
+.user-select
+    user-select: none
+    
 .space-around
     display: flex
-    justify-content: space-around
+    justify-content: space-between
+
+.align-center
+    align-items: center
 </style>

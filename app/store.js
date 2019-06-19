@@ -36,7 +36,7 @@ export default new Vuex.Store({
             state.lesson_items[index].mime = mime;
         },
         setLoaded(state, { index, loaded }) {
-
+            state.lesson_items[index].is_loaded = loaded;
         },
         setPercent(state, { index, percent }) {
             state.lesson_items[index].percent = percent;
@@ -81,7 +81,7 @@ export default new Vuex.Store({
             return state.lesson_items.length;
         },
         checkedCnt(state) {
-            return state.lesson_items.reduce((cnt, item) => item.is_checked ? cnt + 1 : cnt, 0);
+            return state.lesson_items.reduce((cnt, item) => (item.is_checked && !item.is_loaded) ? cnt + 1 : cnt, 0);
         },
         allChecked(state) {
             return state.lesson_items.every(item => item.is_checked);

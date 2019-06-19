@@ -1,5 +1,5 @@
 <template>
-        <button class="btn mt-20" :disabled="!hasChecked">{{btnText}}</button>
+        <button class="btn" :disabled="!hasChecked" @click="btnClick">{{btnText}}</button>
 </template>
 
 <script>
@@ -20,5 +20,10 @@ export default {
             }
         }
     },
+    methods: {
+        btnClick() {
+            alert('click')
+        }
+    }
 }
 </script>
