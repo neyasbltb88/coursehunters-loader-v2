@@ -68,8 +68,10 @@ export default class Utils {
     }
 
     static UrlParse(url) {
-        var regex = /^(http\:\/\/|https\:\/\/|ftp\:\/\/)(.*?\..*?\/)(.*\/)*(.*)\.(.*)$/i;
+        // https://regex101.com/r/bcnNZG/2
+        var regex = /(http\:\/\/|https\:\/\/|ftp\:\/\/)(.*?\..*?\/)(.*\/)*(.*)(\/.*\.(.*))*/i;
         var result_obj = {};
+
         var result = url.match(regex);
 
         result_obj.schema = result[1];
@@ -78,11 +80,22 @@ export default class Utils {
         result_obj.path = result_obj.path.filter(function(item) {
             return item.length > 0;
         });
-        result_obj.file = {
-            'fileName': result[4] + '.' + result[5],
-            'name': result[4],
-            'ext': result[5]
-        };
+
+        if (result[4]) {
+            var file_parts = result[4].split('.');
+
+            if (file_parts.length > 1) {
+                var ext = file_parts.pop();
+                var name = file_parts.join('.');
+                result_obj.file = {
+                    'fileName': name + '.' + ext,
+                    'name': name,
+                    'ext': ext
+                };
+            } else {
+                result_obj.path.push(result[4]);
+            }
+        }
 
         return result_obj;
     }

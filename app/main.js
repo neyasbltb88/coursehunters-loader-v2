@@ -2,8 +2,17 @@ import Vue from 'vue'
 import App from './components/App.vue'
 import store from './store'
 
+import Utils from './scripts/utils'
+window.Utils = Utils
+
 import Loader from './scripts/loader'
 window.Loader = new Loader()
+
+import Downloader from 'downloadjs'
+window.Downloader = Downloader
+
+import SStorage from './scripts/sstorage';
+window.SStorage = SStorage;
 
 Vue.config.productionTip = false
 
