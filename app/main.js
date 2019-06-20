@@ -11,22 +11,33 @@ window.Loader = new Loader()
 import Downloader from 'downloadjs'
 window.Downloader = Downloader
 
-import SStorage from './scripts/sstorage';
-window.SStorage = SStorage;
+import SStorage from './scripts/sstorage'
+window.SStorage = SStorage
 
 Vue.config.productionTip = false
 
-// Создание блока, в который будет монтированться vue
-let app_container = document.createElement('div')
-app_container.id = 'app'
+window.CoursehuntersLoaderInit = false
 
-// Вставить блок в нужное место страницы
-let video_block = document.querySelector('.main-content .standard .container')
-if (video_block) {
-    video_block.after(app_container)
+function runCoursehuntersLoader(params) {
+    if (window.CoursehuntersLoaderInit) return
 
-    window.vm = new Vue({
-        store,
-        render: h => h(App)
-    }).$mount('#app')
+    console.clear()
+    window.CoursehuntersLoaderInit = true;
+    // Создание блока, в который будет монтированться vue
+    let app_container = document.createElement('div')
+    app_container.id = 'app'
+
+    // Вставить блок в нужное место страницы
+    let video_block = document.querySelector('.main-content .standard .container')
+    if (video_block) {
+        video_block.after(app_container)
+
+        window.vm = new Vue({
+            store,
+            render: h => h(App)
+        }).$mount('#app')
+    }
 }
+
+document.addEventListener('DOMContentLoaded', runCoursehuntersLoader)
+window.addEventListener('load', runCoursehuntersLoader)

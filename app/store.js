@@ -7,6 +7,7 @@ Vue.use(Vuex)
 export default new Vuex.Store({
     state: {
         course_name: '',
+        course_display_name: '',
         lesson_items: [],
 
         // Общий флаг, показывающий, идет ли сейчас процесс загрузки
@@ -17,6 +18,9 @@ export default new Vuex.Store({
     mutations: {
         setCourseName(state, name) {
             state.course_name = name;
+        },
+        setCourseDisplayName(state, display_name) {
+            state.course_display_name = display_name;
         },
         masterLoading(state, loading) {
             state.loading = loading;
@@ -70,6 +74,12 @@ export default new Vuex.Store({
         }
     },
     getters: {
+        cnt(state) {
+            return state.lesson_items.length;
+        },
+        getCourseDisplayName(state) {
+            return state.course_display_name;
+        },
         getItems(state) {
             return state.lesson_items;
         },
