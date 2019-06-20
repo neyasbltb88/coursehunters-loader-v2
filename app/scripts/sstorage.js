@@ -38,6 +38,7 @@ export default class SStorage {
 
     clear() {
         localStorage.removeItem(this.name);
+        this.prepareStorage();
     }
 
     // Метод подготовки

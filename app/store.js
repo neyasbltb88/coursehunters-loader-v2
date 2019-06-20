@@ -22,7 +22,7 @@ export default new Vuex.Store({
             state.loading = loading;
         },
         masterCheck(state, check) {
-            state.lesson_items.forEach(item => !item.is_loaded ? item.is_checked = check : null);
+            state.lesson_items.forEach(item => (!item.is_loaded && !item.is_loading) ? item.is_checked = check : null);
         },
         addItem(state, item) {
             // Добавить новый айтем урока
@@ -34,36 +34,20 @@ export default new Vuex.Store({
         updateItem(state, item) {
             state.lesson_items[item.index] = item;
         },
-        setTotal(state, { index, total }) {
-            state.lesson_items[index].total = total;
-        },
-        setMime(state, { index, mime }) {
-            state.lesson_items[index].mime = mime;
-        },
+        // При обновлении количества скаченных байт, 
+        // автоматом вычисляется процент от размера файла
         setLoaded(state, { index, loaded }) {
             let lesson = state.lesson_items[index];
             if (loaded <= lesson.total) {
-                state.lesson_items[index].loaded = loaded;
-                this.commit('setPercent', {
-                    index,
-                    percent: +Utils.Percent(loaded, lesson.total, 0)
-                });
+                lesson.loaded = loaded;
+                lesson.percent = +Utils.Percent(loaded, lesson.total, 0);
             }
-        },
-        setPercent(state, { index, percent }) {
-            state.lesson_items[index].percent = percent;
         },
         setIsChecked(state, { index, is_checked }) {
             state.lesson_items[index].is_checked = is_checked;
         },
         setIsLoading(state, { index, is_loading }) {
             state.lesson_items[index].is_loading = is_loading;
-        },
-        setIsLoaded(state, { index, is_loaded }) {
-            state.lesson_items[index].is_loaded = is_loaded;
-        },
-        setContent(state, { index, content }) {
-
         },
     },
 
@@ -86,27 +70,17 @@ export default new Vuex.Store({
         }
     },
     getters: {
-        getCourseName(state) {
-            return state.course_name;
-        },
         getItems(state) {
             return state.lesson_items;
         },
-        cnt(state) {
-            return state.lesson_items.length;
-        },
-        checkedCnt(state) {
-            // return state.lesson_items.reduce((cnt, item) => (item.is_checked && !item.is_loaded) ? cnt + 1 : cnt, 0);
-            return state.lesson_items.reduce((cnt, item) => (item.is_checked) ? cnt + 1 : cnt, 0);
-        },
-        loadedCnt(state) {
-            return state.lesson_items.reduce((cnt, item) => (item.is_loaded) ? cnt + 1 : cnt, 0);
+        justLoadedCnt(state) {
+            return state.lesson_items.reduce((cnt, item) => (item.is_loaded && !item.was_loaded) ? cnt + 1 : cnt, 0);
         },
         notLoadedCnt(state) {
             return state.lesson_items.reduce((cnt, item) => (!item.is_loaded) ? cnt + 1 : cnt, 0);
         },
-        notLoadedCheckedCnt(state) {
-            return state.lesson_items.reduce((cnt, item) => (!item.is_loaded && item.is_checked) ? cnt + 1 : cnt, 0);
+        notWasLoadedCheckedCnt(state) {
+            return state.lesson_items.reduce((cnt, item) => (!item.was_loaded && item.is_checked) ? cnt + 1 : cnt, 0);
         },
         allChecked(state) {
             return state.lesson_items.every(item => item.is_checked);
@@ -114,14 +88,11 @@ export default new Vuex.Store({
         isLoading(state) {
             return state.loading;
         },
-        totalCheckedSize(state) {
-            return state.lesson_items.reduce((total, item) => (item.is_checked) ? total + item.total : total, 0);
+        totalCheckedNotWasLoaded(state) {
+            return state.lesson_items.reduce((total, item) => (item.is_checked && !item.was_loaded) ? total + item.total : total, 0);
         },
-        totalCheckedNotLoadedSize(state) {
-            return state.lesson_items.reduce((total, item) => (item.is_checked && !item.is_loaded) ? total + item.total : total, 0);
-        },
-        totalLoaded(state) {
-            return state.lesson_items.reduce((loaded, item) => (item.is_checked) ? loaded + item.loaded : loaded, 0);
+        totalNotWasLoaded(state) {
+            return state.lesson_items.reduce((loaded, item) => (item.is_checked && !item.was_loaded) ? loaded + item.loaded : loaded, 0);
         },
     }
 })

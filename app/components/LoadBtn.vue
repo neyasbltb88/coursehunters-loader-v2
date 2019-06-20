@@ -21,19 +21,15 @@ export default {
     computed: {
         ...mapGetters([
             'isLoading',
-            'checkedCnt',
-            'notLoadedCheckedCnt',
-            'loadedCnt',
+            'notWasLoadedCheckedCnt',
             'notLoadedCnt',
-            'cnt',
-            'totalCheckedSize',
-            'totalCheckedNotLoadedSize',
-            'totalLoaded'
+            'totalCheckedNotWasLoaded',
+            'totalNotWasLoaded',
+            'justLoadedCnt'
         ]),
 
         hasChecked() {
-            // return (this.checkedCnt - this.loadedCnt) > 0;
-            return this.notLoadedCheckedCnt > 0;
+            return this.notWasLoadedCheckedCnt > 0;
         },
         btnTitle() {
             let title = '';
@@ -51,13 +47,13 @@ export default {
         btnText() {
             let text = '';
             if(this.hasChecked) {
-                let total = this.Utils.FileSize(this.totalCheckedNotLoadedSize);
-                let loaded = this.Utils.FileSize(this.totalLoaded);
+                let total = this.Utils.FileSize(this.totalCheckedNotWasLoaded);
+                let loaded = this.Utils.FileSize(this.totalNotWasLoaded);
 
                 if(!this.isLoading) {
-                    text = `Скачать: ${this.notLoadedCheckedCnt} / ${this.notLoadedCnt} (${total})`;
+                    text = `Скачать: ${this.notWasLoadedCheckedCnt} / ${this.notLoadedCnt} (${total})`;
                 } else if(this.isLoading) {
-                    text = `Скачено: ${this.loadedCnt} / ${this.checkedCnt} (${loaded} / ${total})`;
+                    text = `Скачено: ${this.justLoadedCnt} / ${this.notWasLoadedCheckedCnt} (${loaded} / ${total})`;
                 }
             } else {
                 text = 'Выберите уроки для скачивания';

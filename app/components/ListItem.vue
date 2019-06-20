@@ -78,6 +78,9 @@ export default {
 
 .empty
     flex-grow: 1
+
+.lessons-list__progress
+    opacity: .3
 </style>
 
 

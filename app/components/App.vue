@@ -6,6 +6,9 @@
             <div class="pt-40 space-around align-center user-select">
                 <LoadBtn @btnClick="btnClickHandler"></LoadBtn>
                 <MasterCheckbox></MasterCheckbox>
+                <ClearHistoryBtn 
+                    @clearHistory="clearHistoryHandler"
+                ></ClearHistoryBtn>
             </div>
         </div>
     </div>
@@ -16,15 +19,17 @@ import { mapMutations, mapGetters, mapActions } from 'vuex';
 import LessonsList from './LessonsList.vue';
 import LoadBtn from './LoadBtn.vue';
 import MasterCheckbox from './MasterCheckbox.vue';
+import ClearHistoryBtn from './ClearHistoryBtn.vue';
 
-import Utils from '../scripts/utils';
+import Collectors from '../scripts/collectors';
 
 export default {
     name: 'app',
     components: {
         LessonsList,
         LoadBtn,
-        MasterCheckbox
+        MasterCheckbox,
+        ClearHistoryBtn
     },
 
     computed: {
@@ -38,71 +43,62 @@ export default {
             'updateItem', 
             'setLoaded',
             'setIsLoading',
-            'setIsLoaded',
         ]),
         ...mapActions([
             'getItem',
         ]),
 
-        collectLessonItems() {
+        // === Сбор данных ===
+        async collectLessonItems() {
             let lesson_elems = document.querySelectorAll('.lessons-item');
-            lesson_elems.forEach((elem, index) => {
-                let item = {};
-                
-                item.index = index;
-                item.name_prefix = elem.querySelector('[itemprop="name"]').textContent;
-                item.lesson_name = elem.querySelector('.lessons-name').textContent;
-                item.url = elem.querySelector('[itemprop="url"]').href;                
-                item.ext = Utils.UrlParse(item.url).file.ext;
-                item.content = null;
-                item.mime = null;
-                item.total = 0;
-                item.loaded = 0;
-                item.percent = 0;
-                item.is_checked = true;
-                item.is_loading = false;
-                item.is_loaded = false;
+            let lessons_items = await this.Collectors.collectLessonsData(lesson_elems, this.storage);
 
-                item.was_loaded = false;
+            lessons_items.forEach(item => this.addItem(item));
 
-                this.addItem(item);
-            });
+            // Запоминаем в localStorage сколько всего уроков в курсе
+            this.storage.set('cnt', lessons_items.length);
         },
-        loadingStart() {
-            console.log('loadingStart');
+        // --- Сбор данных ---
 
+        // === Загрузка уроков ===
+        loadingStart() {
             this.masterLoading(true);
             this.loadingLoop();
         },
         loadingEnd() {
-            console.log('loadingEnd');
-            
             window.Loader.abort();
-
             this.masterLoading(false);
 
             let lessons = this.getItems;
             lessons.forEach(lesson => {
+                // Те уроки, что загружались на момент остановки процесса загрузки,
+                // теряют свой прогресс
                 if (lesson.is_loading) {
                     lesson.is_loading = false;
                     lesson.percent = 0;
                     lesson.loaded = 0;
                 }
 
+                // Те уроки, что уже были скачены на момент остановки процесса загрузки,
+                // будут считаться ранее скаченными(как восстановленные из localStorage),
+                // если начать новую загрузку
+                if(lesson.is_loaded) {
+                    lesson.was_loaded = true;
+                }
+
                 this.updateItem(lesson);
             });
         },
-        async loadingSave(index, event) {
-            let lesson = await this.getItem(index);
-
+        loadingSave(lesson, event) {
             lesson.is_loading = false;
             lesson.is_loaded = true;
             lesson.percent = 100;
 
             let file_name = `${lesson.name_prefix} ${lesson.lesson_name}.${lesson.ext}`;
-
             window.Downloader(new Blob([event.target.response]), file_name, lesson.mime);
 
+            // Запоминаем в localStorage индекс и размер скаченного урока
+            this.storage.set(lesson.index, lesson.total);
             this.updateItem(lesson);            
         },
         loadingProgress(index, event) {
@@ -122,12 +118,14 @@ export default {
             });
 
             // Если у айтема нет url, но есть поле content
-            if (!lesson.url && lesson.content) {
+            // Значит это айтем с описанием курса, и надо спарсить и составить страницу описания
+            if (!lesson.url) {
                 lesson.is_loading = true;
 
                 loded_event = {
                     target: {
-                        response: lesson.content
+                        // Тут response должен будет заполнить метод сбора страницы описания
+                        // response: lesson.content
                     }
                 };
 
@@ -140,11 +138,8 @@ export default {
                         responseType: 'arraybuffer',
                     }, this.loadingProgress.bind(this, index));
                 } catch (error) {
-
-                    // if (error.type === 'abort') {
-                        this.loadingEnd();
-                        return false;
-                    // }
+                    this.loadingEnd();
+                    return false;
                 }
             
             // Если у айтема нет ни url, ни content
@@ -152,10 +147,10 @@ export default {
 
             }
 
+            // TODO: возможно это лишнее
             if (!loded_event) requestAnimationFrame(this.loadingLoop.bind(this));
 
-            this.loadingSave(index, loded_event);
-
+            this.loadingSave(lesson, loded_event);
             this.loadingLoop();
         },
         loadingLoop() {
@@ -179,22 +174,51 @@ export default {
                 this.loadingEnd();
             }
         },
+        // --- Загрузка уроков ---
+
+        // === Обработчики ===
         btnClickHandler() {
             if(!this.isLoading) {
                 this.loadingStart();
             } else {
                 this.loadingEnd();
             }
-        }
+        },
+        clearHistoryHandler() {
+            this.storage.clear();
+
+            let lessons = this.getItems;
+            lessons.forEach(lesson => {
+                lesson.was_loaded = false;
+                lesson.is_loaded = false;
+
+                if(!lesson.is_loading) {
+                    lesson.percent = 0;
+                    lesson.loaded = 0;
+                }
+
+                this.updateItem(lesson);
+            });
+        },
+        // --- Обработчики ---
+
     },
 
     created() {
         let course_name = window.Utils.UrlParse(document.location.href);
-        course_name = course_name.path.pop();
+        course_name = course_name.path.pop();        
 
         this.setCourseName(course_name);
+        this.storage = window.storage_ = new window.SStorage(course_name, {});
         
         this.collectLessonItems();
+    },
+
+    data() {
+        return {
+            storage: null,
+            Collectors
+        }
     }
 }
 </script>
