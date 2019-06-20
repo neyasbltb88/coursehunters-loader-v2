@@ -1,14 +1,18 @@
 <template>
-    <div id="app">
+    <div id="app" class="coursehunters-loader">
         <div class="container">
             <h2 class="standard-title">Скачать курс</h2>
             <LessonsList></LessonsList>
-            <div class="pt-40 space-around align-center user-select">
-                <LoadBtn @btnClick="btnClickHandler"></LoadBtn>
-                <MasterCheckbox></MasterCheckbox>
-                <ClearHistoryBtn 
-                    @clearHistory="clearHistoryHandler"
-                ></ClearHistoryBtn>
+            <div class="pt-40 coursehunters-loader_controls">
+                <div class="coursehunters-loader_columns-3 jc_flex-start">
+                    <LoadBtn @btnClick="btnClickHandler"></LoadBtn>
+                </div>
+                <div class="coursehunters-loader_columns-3 jc_center">
+                    <MasterCheckbox></MasterCheckbox>
+                </div>
+                <div class="coursehunters-loader_columns-3 jc_flex-end">
+                    <ClearHistoryBtn @clearHistory="clearHistoryHandler"></ClearHistoryBtn>
+                </div>
             </div>
         </div>
     </div>
@@ -224,13 +228,24 @@ export default {
 </script>
 
 <style scoped lang="sass">
-.user-select
+.coursehunters-loader_controls
+    display: flex
+    justify-content: stretch
+    align-items: center
     user-select: none
 
-.space-around
+.coursehunters-loader_columns-3
+    width: 33.33%
+    flex-basis: 33.33%
+    flex-grow: 1
     display: flex
-    justify-content: space-between
 
-.align-center
-    align-items: center
+.jc_flex-start
+    justify-content: flex-start
+.jc_center
+    justify-content: center
+.jc_flex-end
+    justify-content: flex-end
+
+
 </style>
