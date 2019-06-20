@@ -1,4 +1,34 @@
 export default class Utils {
+    // Фильтрует строки на предмет недопустимых символов для использования в качестве имени файла
+    static fileNameNormalize(value) {
+        let new_value = value.split('');
+        let template = {
+            '\\': '_',
+            '/': '_',
+            ':': '-',
+            '*': '_',
+            '?': '7',
+            '"': '\'',
+            '<': '{',
+            '>': '}',
+            '|': ' l ',
+        };
+
+        new_value = new_value.map(char => template[char] || char);
+
+        return new_value.join('');
+    }
+
+    // Возвращает расширение файла из пути к нему (https://site.com/code.zip -> .zip)
+    static fileNameExt(url) {
+        // https://regex101.com/r/fIgKBo/1
+        const regex = /.*(\.\w*)/i;
+        let res = url.match(regex);
+
+        return res && res[1];
+    }
+
+    // Конвертер(картинок) из blob в base64
     static blob2base64(blob) {
         return new Promise(resolve => {
             let reader = new FileReader();
@@ -7,6 +37,7 @@ export default class Utils {
         });
     }
 
+    // Возвращает реальный объем строки текста в байтах
     static StrBytes(str) {
         var bytes = 0,
             len = str.length,
@@ -33,12 +64,14 @@ export default class Utils {
         return bytes;
     }
 
+    // Возвращает процентное соотношение current от total
     static Percent(current, total, precision = 2) {
         if (total === 0) return 0..toFixed(precision);
         let percent = (current * 100) / total;
         return percent.toFixed(precision);
     }
 
+    // Принимает число байт, возвращает объем в человекопонятном формате
     static FileSize(size = 0, extend = false) {
         size = +size;
         if (isNaN(size)) return false;
@@ -67,6 +100,7 @@ export default class Utils {
         }
     }
 
+    // Разбирает url-адрес на все возможные составляющие
     static UrlParse(url) {
         // https://regex101.com/r/bcnNZG/2
         var regex = /(http\:\/\/|https\:\/\/|ftp\:\/\/)(.*?\..*?\/)(.*\/)*(.*)(\/.*\.(.*))*/i;
@@ -100,6 +134,7 @@ export default class Utils {
         return result_obj;
     }
 
+    // Принимает количество секунд, возвращает в человекопонятном формате
     static TimeNormalizer(time = 0, ms = false, template = false) {
         if (typeof time !== 'number' || time < 0) return false;
         let result_arr = [];
