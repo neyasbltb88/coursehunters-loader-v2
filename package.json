@@ -1,7 +1,7 @@
 {
-    "name": "livereload-vue",
+    "name": "coursehunters-loader",
     "version": "1.0.0",
-    "description": "Шаблон проекта для написания модификаций сторонних сайтов с использованием vue",
+    "description": "Скрипт, запускаемый на странице курса coursehunters.net для скачивания уроков и материалов курса",
     "main": "build/main.js",
     "scripts": {
         "dev": "gulp",
