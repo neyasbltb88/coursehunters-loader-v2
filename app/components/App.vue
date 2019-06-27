@@ -48,6 +48,7 @@ export default {
             'updateItem', 
             'setLoaded',
             'setIsLoading',
+            'setContent',
         ]),
         ...mapActions([
             'getItem',
@@ -65,9 +66,18 @@ export default {
             }
         },
         async collectMaterials() {
-            let material_item = await this.Collectors.collectMaterials(this.storage, this.cnt, this.getCourseDisplayName);
+            try {
+                let material_item = await this.Collectors.collectMaterials(this.storage, this.cnt, this.getCourseDisplayName);
+                if(material_item) this.addItem(material_item);
+            } catch(err) {}
+        },
+        async collectInfoPage() {
+            try {
+                let info_page = await this.Collectors.collectInfoPage(this.storage, this.cnt, this.getCourseDisplayName);
+                if(info_page) this.addItem(info_page);
+            } catch(err) {}
 
-            if(material_item) this.addItem(material_item);
+            // window.Downloader(new Blob([info_page]), window.Utils.fileNameNormalize('Инфо о курсе - ' + this.getCourseDisplayName + '.html'), 'text/html');
         },
         // --- Сбор данных ---
 
@@ -112,11 +122,8 @@ export default {
             this.storage.set(lesson.storage_name, lesson.total);
             this.updateItem(lesson);            
         },
-        loadingProgress(index, event) {
-            this.setLoaded({
-                index,
-                loaded: event.loaded
-            });
+        loadingProgress(index, {loaded}) {
+            this.setLoaded({ index, loaded });
         },
         async loadingLesson(lesson) {
             if (lesson === undefined) this.loadEnd();
@@ -128,22 +135,19 @@ export default {
                 is_loading: true
             });
 
-            // Если у айтема нет url, но есть поле content
+            // Если у айтема нет url, но есть поле collect_method
             // Значит это айтем с описанием курса, и надо спарсить и составить страницу описания
-            if (!lesson.url) {
-                lesson.is_loading = true;
+            if (!lesson.url && lesson.collect_method) {
+                // Вызов вложенного в айтем метода сбора контента
+                let content = await lesson.collect_method.call();
+                this.setContent({ index, content });
 
                 loded_event = {
-                    target: {
-                        // Тут response должен будет заполнить метод сбора страницы описания
-                        // response: lesson.content
-                    }
+                    target: {response: content}
                 };
 
             // Если у айтема есть url
             } else if(lesson.url) {
-                lesson.is_loading = true;
-
                 try {
                     loded_event = await window.Loader.request(lesson.url, {
                         responseType: 'arraybuffer',
@@ -152,16 +156,9 @@ export default {
                     this.loadingEnd();
                     return false;
                 }
-            
-            // Если у айтема нет ни url, ни content
-            } else {
-
             }
 
-            // TODO: возможно это лишнее
-            if (!loded_event) requestAnimationFrame(this.loadingLoop.bind(this));
-
-            this.loadingSave(lesson, loded_event);
+            if(loded_event) this.loadingSave(lesson, loded_event);
             this.loadingLoop();
         },
         loadingLoop() {
@@ -181,9 +178,7 @@ export default {
             }
 
             // Если не найдено подходящего для загрузки урока, то закончить загрузку
-            if (index === undefined) {
-                this.loadingEnd();
-            }
+            if (index === undefined) this.loadingEnd();
         },
         // --- Загрузка уроков ---
 
@@ -197,6 +192,10 @@ export default {
         },
         clearHistoryHandler() {
             this.storage.clear();
+
+            // Запоминаем в localStorage сколько всего уроков в курсе
+            let lessons_list = document.querySelectorAll('#lessons-list .lessons-item');
+            if(lessons_list) this.storage.set('cnt', lessons_list.length);
 
             let lessons = this.getItems;
             lessons.forEach(lesson => {
@@ -229,6 +228,8 @@ export default {
         await this.collectLessonItems();
         // Собрать айтем материалов курса
         await this.collectMaterials();
+
+        await this.collectInfoPage()
     },
 
     data() {

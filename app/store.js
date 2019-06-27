@@ -33,7 +33,7 @@ export default new Vuex.Store({
             state.lesson_items.push(item);
 
             // Запросить размер файла урока
-            this.dispatch('requestItemTotal', item);
+            requestAnimationFrame(() => this.dispatch('requestItemTotal', item));
         },
         updateItem(state, item) {
             state.lesson_items[item.index] = item;
@@ -53,6 +53,14 @@ export default new Vuex.Store({
         setIsLoading(state, { index, is_loading }) {
             state.lesson_items[index].is_loading = is_loading;
         },
+        setContent(state, { index, content }) {
+            state.lesson_items[index].content = content;
+
+            let content_length = Utils.StrBytes(content);
+            state.lesson_items[index].total = content_length;
+            state.lesson_items[index].loaded = content_length;
+            state.lesson_items[index].percent = 100;
+        }
     },
 
     // dispatch
