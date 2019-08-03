@@ -18,7 +18,7 @@ Vue.config.productionTip = false
 
 window.CoursehuntersLoaderInit = false
 
-function runCoursehuntersLoader(params) {
+window.runCoursehuntersLoader = function() {
     if (window.CoursehuntersLoaderInit) return
 
     console.clear()
@@ -41,3 +41,5 @@ function runCoursehuntersLoader(params) {
 
 document.addEventListener('DOMContentLoaded', runCoursehuntersLoader)
 window.addEventListener('load', runCoursehuntersLoader)
+
+let CoursehuntersLoaderInitTimeout = setTimeout(runCoursehuntersLoader, 5000)
