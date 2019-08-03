@@ -103,6 +103,7 @@ export default class InfoPageCollector {
                 }
                 .course-wrap-description {
                     max-width: none;
+                    cursor: auto;
                 }
                 .course-wrap-side-right {
                     width: 50%;

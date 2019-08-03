@@ -1,10 +1,10 @@
-import Utils from './utils';
-import InfoPageCollector from './info-page-collector';
+import Utils from "./utils";
+import InfoPageCollector from "./info-page-collector";
 window.InfoPageCollector = InfoPageCollector;
 
 export default class Collectors {
     static async collectLessonsData(storage) {
-        let lesson_elems = document.querySelectorAll('.lessons-item');
+        let lesson_elems = document.querySelectorAll(".lessons-item");
         let result_items = [];
 
         lesson_elems.forEach((elem, index) => {
@@ -12,12 +12,17 @@ export default class Collectors {
 
             let item = {
                 index: index,
-                name_prefix: Utils.fileNameNormalize(elem.querySelector('[itemprop="name"]').textContent),
-                name_concat: ' ',
-                lesson_name: Utils.fileNameNormalize(elem.querySelector('.lessons-name').textContent),
+                name_prefix: Utils.fileNameNormalize(
+                    elem.querySelector('[itemprop="name"]').textContent
+                ),
+                name_concat: " ",
+                lesson_name: Utils.fileNameNormalize(
+                    elem.querySelector(".lessons-name").textContent
+                ),
                 storage_name: index,
                 url: elem.querySelector('[itemprop="url"]').href,
-                ext: Utils.UrlParse(elem.querySelector('[itemprop="url"]').href).file.ext,
+                ext: Utils.UrlParse(elem.querySelector('[itemprop="url"]').href)
+                    .file.ext,
                 content: null,
                 mime: null,
                 total: restore_item_loaded ? +restore_item_loaded : 0,
@@ -26,7 +31,7 @@ export default class Collectors {
                 is_checked: true,
                 is_loading: false,
                 is_loaded: restore_item_loaded ? true : false,
-                was_loaded: restore_item_loaded ? true : false,
+                was_loaded: restore_item_loaded ? true : false
             };
 
             result_items.push(item);
@@ -36,17 +41,19 @@ export default class Collectors {
     }
 
     static async collectMaterials(storage, index, course_name) {
-        let materials_btn = document.querySelector('[title="Download course materials"]');
+        let materials_btn = document.querySelector(
+            '[title="Download course materials"]'
+        );
         if (!materials_btn) return false;
 
-        let restore_material_item = storage.get('code');
+        let restore_material_item = storage.get("code");
 
         let material_item = {
             index,
-            name_prefix: 'Материалы курса',
-            name_concat: ' - ',
+            name_prefix: "Материалы курса",
+            name_concat: " - ",
             lesson_name: Utils.fileNameNormalize(course_name),
-            storage_name: 'code',
+            storage_name: "code",
             url: materials_btn.href,
             ext: Utils.UrlParse(materials_btn.href).file.ext,
             content: null,
@@ -57,7 +64,7 @@ export default class Collectors {
             is_checked: true,
             is_loading: false,
             is_loaded: restore_material_item ? true : false,
-            was_loaded: restore_material_item ? true : false,
+            was_loaded: restore_material_item ? true : false
         };
 
         return material_item;
@@ -65,27 +72,27 @@ export default class Collectors {
 
     static async collectInfoPage(storage, index, course_name) {
         let infoPageCollector = new InfoPageCollector();
-        let restore_info_page_item = storage.get('info');
+        let restore_info_page_item = storage.get("info");
 
         let info_page_item = {
             index,
-            name_prefix: 'Инфо о курсе',
-            name_concat: ' - ',
+            name_prefix: "Инфо о курсе",
+            name_concat: " - ",
             lesson_name: Utils.fileNameNormalize(course_name),
-            storage_name: 'info',
+            storage_name: "info",
             url: null,
-            ext: '.html',
+            ext: "html",
             content: null,
             collect_method: infoPageCollector.build.bind(infoPageCollector),
-            mime: 'text/html',
+            mime: "text/html",
             total: restore_info_page_item ? +restore_info_page_item : 0,
             loaded: restore_info_page_item ? +restore_info_page_item : 0,
             percent: restore_info_page_item ? 100 : 0,
             is_checked: true,
             is_loading: false,
             is_loaded: restore_info_page_item ? true : false,
-            was_loaded: restore_info_page_item ? true : false,
-        }
+            was_loaded: restore_info_page_item ? true : false
+        };
 
         return info_page_item;
     }
